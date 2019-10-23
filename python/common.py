@@ -6,18 +6,20 @@ from twisted.python import log
 class PotFactory:
     dbpool = None
 
-    def __init__(self, logfile=None, dburl=None):
+    def __init__(self, logfile=None, dburl=None, driver="MySQLdb"):
         self.logfile = logfile
+        self.driver = driver # other options ('MySQLdb', 'pymssql', 'psycopg2',)
 
         if dburl:
             from re import match
             user, passwd, host, port, db = match(r'(.+?)(?::(.+))?@(.+?)(?::(\d+))?/(.+)$', dburl).groups()
             if not user: user = ''
             if not passwd: passwd = ''
-            if not port: port = 3306
+            #if not port: port = 3306
+            if not port: port = 1433
             if not host: host = '127.0.0.1'
-            dbopts = {'user': user, 'passwd': passwd, 'host': host, 'port': int(port), 'db': db, 'cp_reconnect': True}
-            self.dbpool = adbapi.ConnectionPool('MySQLdb', **dbopts)
+            dbopts = {'user': user, 'passwd': passwd, 'host': host, 'port': int(port), 'db': db,}
+            self.dbpool = adbapi.ConnectionPool(self.driver, **dbopts)
 
     def updatePot(self, login, password, host):
         log.msg('Thank you %s - %s : %s' % (host, login.decode("utf8"), password.decode("utf8")))
